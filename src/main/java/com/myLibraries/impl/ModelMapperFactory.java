@@ -1,25 +1,15 @@
 package com.myLibraries.impl;
 
 import com.myLibraries.ModelMapper;
-
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
+import com.myLibraries.ModelMapperType;
 
 public class ModelMapperFactory {
-    public static <S, D> ModelMapper<S, D> get(Class<D> destinationClass) {
-        if (destinationClass.isRecord()) {
-            return new RecordMapper<>();
-        } else {
-            Constructor<?> allArgsConstructor = Arrays.stream(destinationClass.getDeclaredConstructors())
-                    .filter(c -> c.getParameterCount() == destinationClass.getDeclaredFields().length)
-                    .findFirst()
-                    .orElse(null);
-
-            if (allArgsConstructor != null) {
-                return new AllArgsConstructorMapper<>(allArgsConstructor);
-            } else {
-                return new SimpleModelMapper<>();
-            }
-        }
+    public static <S, D> ModelMapper<S, D> get(ModelMapperType type) {
+        return switch (type) {
+            case CLASS_WITH_DEFAULT_CONSTRUCTOR -> new SimpleModelMapper<>();
+            case CLASS_WITH_ALL_ARGS_CONSTRUCTOR -> new AllArgsConstructorMapper<>();
+            case RECORD -> new RecordMapper<>();
+        };
     }
+
 }
